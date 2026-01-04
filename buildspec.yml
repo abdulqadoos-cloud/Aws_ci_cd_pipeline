@@ -5,29 +5,29 @@ env:
     AWS_REGION: us-east-1
     ECR_REPO: nginx-static-site
     CONTAINER_NAME: nginx
+    ECS_CLUSTER: nginx-cluster
+    ECS_SERVICE: nginx-service
 
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR
-      - aws --version
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
       - IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:latest
 
   build:
     commands:
-      - echo Building Nginx Docker image
+      - echo Building Docker image
       - docker build -t $IMAGE_URI .
       - docker push $IMAGE_URI
 
   post_build:
     commands:
-      - echo Creating imagedefinitions.json
+      - echo Updating ECS service with new image
       - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $IMAGE_URI > imagedefinitions.json
+      - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment --region $AWS_REGION
 
 artifacts:
   files:
     - imagedefinitions.json
-    - appspec.yml   # Keep this for CodePipeline ECS deploy
-#  - taskdef.json # REMOVE this line, not needed since task is managed in ECS
