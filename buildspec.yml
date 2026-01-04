@@ -14,6 +14,7 @@ phases:
       - echo Logging in to Amazon ECR
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 176276969340.dkr.ecr.us-east-1.amazonaws.com
+      - IMAGE_TAG=$(date +%Y%m%d%H%M%S)
       - IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:latest
 
   build:
