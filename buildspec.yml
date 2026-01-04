@@ -29,5 +29,5 @@ phases:
 artifacts:
   files:
     - imagedefinitions.json
-    - appspec.yml
-    - taskdef.json
+    - appspec.yml   # Keep this for CodePipeline ECS deploy
+#  - taskdef.json # REMOVE this line, not needed since task is managed in ECS
